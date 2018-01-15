@@ -1,0 +1,19 @@
+class Array{
+	
+
+	function Array new(int size){
+	/** Returns a new array */
+		if(size<0){
+			do Sys.error(2);
+		}
+
+		return Memory.alloc(size); 
+	}
+
+	method void dispose(){
+	/** Disposes this array */
+
+		do Memory.deAlloc(this);
+		return;
+	}
+}
