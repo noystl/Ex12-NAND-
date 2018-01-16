@@ -84,9 +84,14 @@ class Memory {
                 do Memory.setIsEmpty(currBlock, false); // Update status
 
                 // Init a block in the remainder
-                let splitBlock = currBlock + blockSize; // Fetch address
-                let splitLen = nextBlock - splitBlock;  // Calc size
-                do Memory.initEmptyBlock(splitBlock, splitLen, currBlock);
+                let splitAdr = currBlock + blockSize; // Fetch address
+                let splitLen = nextBlock - splitAdr;  // Calc size
+                do Memory.initEmptyBlock(splitAdr, splitLen, currBlock);
+
+                // Update the prev of the next (only if not last block)
+                if (nextBlock < HEAP_END) {
+                    do Memory.setPrevAdr(nextBlock, splitAdr);
+                }
             }
             // No split? Mark the entire block as not empty
             else {
