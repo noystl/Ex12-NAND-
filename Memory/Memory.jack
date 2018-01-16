@@ -51,10 +51,10 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
-        var int currBlock; // Address of current memory block
-        var int blockSize; // size + header
+        var int currBlock;  // Address of current memory block
+        var int blockSize;  // size + header
         var int nextBlock;  // Address of the next block after the allocated
-        var int splitBlock; // Address of the remainder block in case of
+        var int splitAdr;   // Address of the remainder block in case of
                             // splitting a block for allocation
         var int splitLen;   // Length of the splitBlock
 
@@ -98,8 +98,8 @@ class Memory {
                 do Memory.setIsEmpty(currBlock, false);
             }
 
-            // Return allocated block
-            return currBlock;
+            // Return data pointer of allocated block
+            return getDataAdr(currBlock);
         }
 
         // No valid address - try to defrag, or FATAL: NO MEMORY
@@ -170,6 +170,12 @@ class Memory {
      * block. */
     function int getNextAdr(int blockAdr) {
         return blockAdr + Memory.getLen(blockAdr);
+    }
+
+    /** Returns the address of the data segment of the block to be used by the
+    * user who requested its allocation. */
+    function int getDataAdr(int blockAdr) {
+        return blockAdr + 3;
     }
 
     // ===========
