@@ -1,0 +1,201 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+
+    // Static class variables
+    static Array memory;
+    static int HEAP_BASE;
+    static int HEAP_END;
+    static int HEAP_LEN;
+    static int HEADER_LEN;
+    static int NO_MORE_MEMORY; // Error code
+
+    /** Initializes the class. */
+    function void init() {
+        // Initialize heap constants
+        let memory = 0;
+        let HEAP_BASE = 2048;
+        let HEAP_END = 16383;
+        let HEAP_LEN = HEAP_END - HEAP_BASE;
+        let HEADER_LEN = 3; // [size,status,prev]
+        let NO_MORE_MEMORY = -1;
+
+        // Initialize heap memory block
+        // do Memory.initEmptyBlock(HEAP_BASE, HEAP_LEN, null, true)
+        do Memory.setLen(HEAP_BASE, HEAP_LEN);
+        do Memory.setPrevAdr(HEAP_BASE, null);
+        do Memory.setIsEmpty(HEAP_BASE, true);
+
+        return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+        return memory[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+        let memory[address] = value;
+        return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+        var int currBlock; // Address of current memory block
+        var int blockSize; // size + header
+        var int nextBlock;  // Address of the next block after the allocated
+        var int splitBlock; // Address of the remainder block in case of
+                            // splitting a block for allocation
+        var int splitLen;   // Length of the splitBlock
+
+        let currBlock = HEAP_BASE;  // Start looking from base forward
+        let blockSize = size + HEADER_LEN; // Allocate header + required size
+
+        // first-fit strategy:
+        // Look for first empty block with matching size
+        while (((Memory.getLen(currBlock) < blockSize) & // Not enough space
+                (~(Memory.getIsEmpty(currBlock)))) &            // Not empty
+                Memory.isValidBlockAdr(currBlock, blockSize)) { // Within heap
+             // Advance to next block
+             let currBlock = Memory.getNextAdr(currBlock);
+        }
+
+        // Check if valid block address found
+        if (Memory.isValidBlockAdr(currBlock, blockSize)){
+            // Split the remainder of the block?
+            // Split only if remainder can contain another full block
+            // To contain another block there must be space for a header
+            if (blockSize + HEADER_LEN < Memory.getLen(currBlock)) {
+                // Fetch next block
+                let nextBlock = Memory.getNextAdr(currBlock);
+
+                // Shorten current block
+                do Memory.setLen(currBlock, blockSize); // Update length
+                do Memory.setIsEmpty(currBlock, false); // Update status
+
+                // Init a block in the remainder
+                let splitBlock = currBlock + blockSize; // Fetch address
+                let splitLen = nextBlock - splitBlock;  // Calc size
+                do Memory.initEmptyBlock(splitBlock, splitLen, currBlock);
+            }
+            // No split? Mark the entire block as not empty
+            else {
+                do Memory.setIsEmpty(currBlock, false);
+            }
+
+            // Return allocated block
+            return currBlock;
+        }
+
+        // No valid address - try to defrag, or FATAL: NO MEMORY
+        else {
+            do Sys.error(NO_MORE_MEMORY);
+            return 0;
+        }
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+        // Mark the object's block as empty
+        var int block;
+        let block = o;
+        do Memory.setIsEmpty(o, true);
+        return;
+    }
+
+    /** Returns whether or not the given address is valid for a block
+     * of the given size (INCLUDING the header). */
+    function boolean isValidBlockAdr(int blockAdr, int blockSize) {
+        // Address before HEAP_BASE
+        if (blockAdr < HEAP_BASE){
+            return false;
+        }
+        // Not enough heap left OR exceeding HEAP_END
+        if (blockAdr + blockSize > HEAP_END){
+            return false;
+        }
+
+        // within valid boundaries
+        return true;
+    }
+    // ==========================
+    // = Memory Block Structure =
+    // ==========================
+    //  adr | value
+    // -----+----------
+    //  0   | len (=n)
+    //  1   | isEmpty
+    //  2   | prev
+    //  3   | data[0]
+    //  ... | data[...]
+    //  n-1 | data[n-1]
+
+    // ===========
+    // = Getters =
+    // ===========
+    /** Returns the size of the current memory block (start to end INCLUDING
+     * header) in words. */
+    function int getLen(int blockAdr) {
+        return blockAdr[0];
+    }
+
+    /** Returns the status of the given memory block. */
+    function boolean getIsEmpty(int blockAdr) {
+        return blockAdr[1];
+    }
+
+    /** Returns the address of the previous memory block before the given
+     * block. */
+    function int getPrevAdr(int blockAdr) {
+        return blockAdr[2];
+    }
+
+    /** Returns the address of the next memory block after the given
+     * block. */
+    function int getNextAdr(int blockAdr) {
+        return blockAdr + Memory.getLen(blockAdr);
+    }
+
+    // ===========
+    // = Setters =
+    // ===========
+    /** Initializes an empty block at the given address with the given len and
+     * prev. */
+    function void initEmptyBlock(int blockAdr, int len, int prev) {
+        do Memory.setLen(blockAdr, len);        // Length INCLUDING header
+        do Memory.setPrevAdr(blockAdr, prev);   // Prev start pointer
+        do Memory.setIsEmpty(blockAdr, true);   // isEmpty = True
+        return;
+    }
+
+    /** Sets the size of the current memory block (start to end INCLUDING
+     * header) in words. */
+    function void setLen(int blockAdr, int len) {
+        let memory[blockAdr + 0] = len;
+        return;
+    }
+
+    /** Sets the status of the given memory block. */
+    function void setIsEmpty(int blockAdr, boolean isEmpty) {
+        let memory[blockAdr + 1] = isEmpty;
+        return;
+    }
+
+    /** Sets the address of the previous memory block before the given
+     * block. */
+    function void setPrevAdr(int blockAdr, int preAdr) {
+        let memory[blockAdr + 2] = preAdr;
+        return;
+    }
+}
