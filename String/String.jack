@@ -1,27 +1,35 @@
-class String(){
-	
+class String{
+
+
+    //TODO: test sys errors
+    // TODO: 19   String.setInt         Insufficient string capacity
+
+
 	field int realLength;
 	field int mLength;
 	field Array string;
 
 	constructor String new(int maxLength){
-	/** Creates a new String object of length 0 containing no more chars than maxLength. */
+	/** Creates a new String object of length 0 containing no more
+	chars than maxLength. */
 
-		if(maxLength < 0){
-			do Sys.error(14);
+		if(maxLength < 1){
+			return this;
 		}
 
 		let realLength = 0;
 		let mLength = maxLength;
-		let string = Array.new(maxLength);
+		let string = Array.new(mLength);
 
 		return this;
 	}
 
 	method void dispose(){
-	/** Disposes the string */	
-
-		do string.dispose();
+	/** Disposes the string */
+        if(~(mLength < 1)){
+            do string.dispose();
+        }
+        do Memory.deAlloc(this);
 		return;
 	}
 
@@ -37,15 +45,14 @@ class String(){
 		if(j > realLength){
 			do Sys.error(15);
 		}
-
 		return string[j];
-		
+
 	}
 
 	method void setCharAt(int j, char c){
 	/** Sets the j'th element of the string to be c */
 
-		if(j > realLength){
+		if(j > (realLength)){
 			do Sys.error(16);
 		}
 
@@ -57,42 +64,107 @@ class String(){
 	method String appendChar(char c){
 	/** Appends c to the string and returns this string */
 
-		if(realLength = maxLength){
+		if(realLength = mLength){
 			do Sys.error(17);
 		}
 
+        let string[realLength] = c;
 		let realLength = realLength + 1;
-		let string[realLength] = c;
 
-		return this; 
+		return this;
 	}
 
 	method void eraseLastChar(){
 	/** Erases the last character from the string */
-		
+
 		if(realLength = 0){
 			do Sys.error(18);
 		}
 
 		let realLength = realLength - 1;
 
-		return; 
+		return;
 	}
+
 
 	method int intValue(){
-	/** Returns the integer value of this string */
+	/** Returns the integer value of this string or of the string
+    prefix until a non integer char is detected. */
 
-		return -1;
+        var int v;
+        var int d;
+        var int sign;
+        var int i;
+
+        let v = 0;
+        let i = 0;
+        let sign = 1;
+
+        if(charAt(0) = 45){ // 45 is the ASCII for "-".
+            let sign = -sign;
+            let i = 1;
+        }
+
+        while((i < length()) & (47 < charAt(i)) & (58 > charAt(i))){
+
+            let d = charAt(i) - 48;
+            let v = (v * 10) + d;
+            let i = i + 1;
+        }
+
+        if(sign = 1){
+           return v;
+        }
+
+        return (-v);
 	}
+
+
+    function int mod(int a, int b) {
+    /** This function returns the modulus of a/b */
+
+    var int  mod;
+
+    let mod = a;
+
+    while(mod > b){
+
+        let mod = mod - b;
+
+    }
+
+    return mod;
+    }
+
 
 	method void setIntHelper(int j){
 	/** Converts a non negative number to a string */
 		
-		var int last;
+		var char c;
+
+		let c = 48 + String.mod(j,10);
+
+        if(j < 10){
+
+			do appendChar(c);
+		}
+		else{
+
+			do setIntHelper(j / 10);
+			do appendChar(c);
+		}
+		return;
+
+
+
+
+
+
+		/**var int last;
 		var char c;
 
 		let last = j - (j / 10);
-		let c = 48 + last;
+		let c = 48 + (j - (j / 10));
 
 		if(j < 10){
 
@@ -100,16 +172,15 @@ class String(){
 		}
 		else{
 
-			setIntHelper(j / 10);
+			do setIntHelper(j / 10);
 			do appendChar(c);
 		}
-		return;
+		return; */
 	}
 
-	method void setInt(int j){   // TODO: Insufficient string capacity??
+	method void setInt(int j){
 	/** Sets this string to hold the representation of j  */
 
-		let string = Array.new(mLength);
 		let realLength = 0;
 
 		if(j < 0){

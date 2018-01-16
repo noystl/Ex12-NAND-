@@ -7,6 +7,15 @@
 class Main {
 
     /** Performs various string manipulations and displays their results. */
+    /**  function void main(){
+           var String s;
+           let s = String.new(6); // capacity 6, make sure that length 5 is displayed
+           let s = s.appendChar(97);
+           do s.charAt(0);
+           do Output.printInt(s.charAt(0));         // charAt[2]: 99 */
+
+
+
     function void main() {
         var String s;
         var String i;
@@ -24,7 +33,7 @@ class Main {
         do Output.printString(s);                // new, appendChar: abcde
         do Output.println();
     
-        let i = String.new(6);
+       let i = String.new(6);
         do i.setInt(12345);
         do Output.printString("setInt: ");
         do Output.printString(i);                // setInt: 12345
