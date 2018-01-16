@@ -175,7 +175,7 @@ class Memory {
     /** Returns the address of the data segment of the block to be used by the
     * user who requested its allocation. */
     function int getDataAdr(int blockAdr) {
-        return blockAdr + 3; 
+        return blockAdr + 3;
     }
 
     // ===========
