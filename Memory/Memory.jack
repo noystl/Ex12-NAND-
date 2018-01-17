@@ -99,11 +99,12 @@ class Memory {
             }
 
             // Return data pointer of allocated block
-            return getDataAdr(currBlock);
+            return Memory.getDataAdr(currBlock);
         }
 
         // No valid address - try to defrag, or FATAL: NO MEMORY
         else {
+            // RazK: TODO: Try to defrag
             do Sys.error(NO_MORE_MEMORY);
             return 0;
         }
@@ -111,11 +112,53 @@ class Memory {
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
+     // RazK: TODO: Don't deallocate null blocks
     function void deAlloc(Array o) {
-        // Mark the object's block as empty
-        var int block;
-        let block = o;
-        do Memory.setIsEmpty(o, true);
+        var int currBlock;
+        var int prevBlock;
+        var int nextBlock;
+        var int nextNextBlock;
+
+        // Extract block address from given data address
+        let currBlock = Memory.getBlockAdr(o);
+
+        // Merge with next / prev blocks if empty as well
+        let prevBlock = Memory.getPrevAdr(currBlock);
+        let nextBlock = Memory.getNextAdr(currBlock);
+
+        // If previous block is (not null) and empty - merge
+        if (~(prevBlock = 0)){
+            if (Memory.getIsEmpty(prevBlock)) {
+                // Update len of prev block to contain current
+                do Memory.setLen(prevBlock, nextBlock - prevBlock);
+
+                // Update the prev of the next (only if not last block)
+                if (nextBlock < HEAP_END) {
+                    do Memory.setPrevAdr(nextBlock, prevBlock);
+                }
+
+                // Update current block to be prev
+                let currBlock = prevBlock;
+            }
+        }
+
+        // If next block is (within heap) and empty - merge
+        if (nextBlock < HEAP_END) {
+            if (Memory.getIsEmpty(nextBlock)) {
+
+                // Update len of current block to contain next
+                let nextNextBlock = Memory.getNextAdr(nextBlock);
+                do Memory.setLen(currBlock, nextNextBlock - currBlock);
+
+                // Update the prev of the nextNext (only if not last block)
+                if (nextNextBlock < HEAP_END) {
+                    do Memory.setPrevAdr(nextNextBlock, currBlock);
+                }
+            }
+        }
+
+        // Mark this block as empty
+        do Memory.setIsEmpty(currBlock, true);
         return;
     }
 
@@ -177,6 +220,13 @@ class Memory {
     function int getDataAdr(int blockAdr) {
         return blockAdr + 3;
     }
+
+    /** Returns the address of the header segment (block) of the data given by
+     * the user who requested its deallocation. */
+    function int getBlockAdr(int dataAdr) {
+        return dataAdr - 3;
+    }
+
 
     // ===========
     // = Setters =
