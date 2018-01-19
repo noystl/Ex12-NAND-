@@ -16,7 +16,7 @@
  */
 class Output {
 
-    // Characte map for displaying characters
+    // Character map for displaying characters
     static Array charMaps;
 
     // The cursor's coordinates:
@@ -25,6 +25,7 @@ class Output {
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
+        // RazK: TODO: Move clearScreen to Screen's init
         do Screen.clearScreen();
         do Output.moveCursor(0,0);
         do Output.initMap();

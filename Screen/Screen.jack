@@ -10,34 +10,239 @@
  * the screen is indexed (0,0).
  */
 class Screen {
+    static int SCREEN_BASE;
+    static Array twoPows;
+    static boolean isBlack;
 
     /** Initializes the Screen. */
     function void init() {
+        var int i, x;
+
+        let SCREEN_BASE = 16384;
+        let isBlack = true;
+
+        // Init 2-pows
+        let twoPows = Array.new(16);
+        let i = 0;
+        let x = 1;
+        while (i < 16){
+            let twoPows[i] = x;
+            let x = x + x;
+            let i = i + 1;
+        }
+
+        return;
     }
 
     /** Erases the entire screen. */
     function void clearScreen() {
+        // RazK: TODO: Implement!
+        return;
     }
 
     /** Sets the current color, to be used for all subsequent drawXXX commands.
      *  Black is represented by true, white by false. */
     function void setColor(boolean b) {
+        let isBlack = b;
+        return;
     }
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
+        var int wordAdr, word, row, col, pix, bitmask;
+
+        // Calculate row and column of pixel's word
+        let row = Screen.mult32(y);
+        let col = Screen.div16(x);
+
+        // Build bitmask of pixel's word
+        let pix = Screen.mod16(x);
+        let bitmask = twoPows[pix];
+
+        // Color pixel
+        do Screen.colorWord(col, row, bitmask);
+        return;
     }
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
+        // Horizontal line?
+        if (y1 = y2){
+
+        }
+        // RazK: TODO: Implement!
+        return;
     }
 
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
+        // RazK: TODO: Implement!
+        return;
     }
 
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
+        // RazK: TODO: Implement!
+        return;
+    }
+
+    // ================================
+    // = Optimized Specific Functions =
+    // ================================
+
+    /** Returns the given word colored with the given bitmask according to
+     * current color. */
+    function int getColoredWord(int word, int bitmask){
+        // Black: bitmask | word
+        if (isBlack){ // Turn pixels ON
+            return bitmask | word;
+        }
+        // White: ~bitmask & word
+        else { // Turn pixels OFF
+            return (~(bitmask)) & word;
+        }
+    }
+
+    /** Colors the screen word at the given row and column with the given
+     * bitmask according to current color. */
+    function void colorWord(int row, int col, int bitmask){
+        var int wordAdr, word;
+
+        // Extract desired word from screen
+        let wordAdr = SCREEN_BASE + row + col;
+        let word = Memory.peek(wordAdr);
+
+        // Color masked pixels in word with current color
+        let word = Screen.getColoredWord(word, bitmask);
+        do Memory.poke(wordAdr, word);
+        return;
+    }
+
+    /** Draws a horizontal line at height y from x1 to x2 */
+    function void drawHorizontalLine(int y, int x1, int x2){
+        var int left, right;
+        var int leftCol, rightCol, row;
+        var int leftPix, rightPix;
+        var int col, pix;
+        var int mask, maskLeft, maskRight;
+
+        // RazK: TODO: If ALL usages can determine this in advance, remove
+        // Classify left and right (or draw pixel if same)
+        if (x1 < x2){
+            let left = x1;
+            let right = x2;
+        }
+        else {
+            if (x2 < x1){
+                let left = x2;
+                let right = x1;
+            }
+            else { // Same x --> single pixel
+                do Screen.drawPixel(x1, y);
+                return;
+            }
+        }
+
+        // Extract row, columns and pixels
+        let row = Screen.mult32(y);
+        let leftCol = Screen.div16(left);
+        let leftPix = Screen.mod16(left);
+        let rightCol = Screen.div16(right);
+        let rightPix = Screen.mod16(right);
+
+        // Case 1:  | +---+ | (pixels in same col)
+        //            L   R
+        if (leftCol = rightCol){
+            let mask = Screen.maskBetween(leftPix, rightPix);
+            do Screen.colorWord(row, leftCol, mask);
+        }
+        // Case 2:  |   +---|[...]|---+   | (pixels in different cols)
+        //              L             R
+        else {
+            let maskLeft = Screen.maskSuffix(leftPix);
+            let maskRight = Screen.maskPrefix(rightPix);
+
+            // Color left part
+            do Screen.colorWord(row, leftCol, maskLeft);
+
+            // Color words between
+            let col = leftCol + 1;
+            while (col < rightCol){
+                do Screen.colorWord(row, col, -1);
+                let col = col + 1;
+            }
+
+            // Color right part
+            do Screen.colorWord(row, rightCol, maskRight);
+        }
+
+        return;
+    }
+
+    // ======================
+    // = Clever Bitmask Ops =
+    // ======================
+
+    /** Generate a bitmask from given index (inclusive) up to word end.
+     * Example:
+     *     i=2
+     *  |  +---|
+     *  |001111| (bitmask) */
+    function int maskSuffix(int i){
+        return ~(twoPows[i]-1);
+    }
+
+    /** Generate a bitmask from word start up to given index (inclusive).
+     * Example:
+     *     i=2
+     *  |--+   |
+     *  |111000| (bitmask) */
+    function int maskPrefix(int i){
+        return twoPows[i] | (twoPows[i]-1);
+    }
+
+    /** Generate a bitmask from i to j (inclusive)
+     * Example:
+     *  i=1, j=4
+     *  | +--+ |
+     *  |011110| (bitmask) */
+    function int maskBetween(int i, int j){
+        return Screen.maskSuffix(i) & Screen.maskPrefix(j);
+    }
+
+    // ===================
+    // = Math For Screen =
+    // ===================
+
+    /** Calculates (x * 32) FAST */
+    function int mult32(int x){
+        var int i;
+        let i = 0;
+        while (i<5){
+            let x = x + x;
+            let i = i + 1;
+        }
+        return x;
+    }
+
+    /** Calculates (x / 16) FAST */
+    function int div16(int x){
+        var int i, res;
+        let i = 4;
+        let res = 0;
+        // Accumulate 2^[i-4] for every 2^[i] in y
+        while (i<16){
+            if ((x & twoPows[i]) = twoPows[i]){
+                let res = res + twoPows[i-4];
+            }
+            let i = i + 1;
+        }
+        return res;
+    }
+
+    /** Calculates (x % 16) FAST */
+    function int mod16(int x){
+        return x & 15;
     }
 }
