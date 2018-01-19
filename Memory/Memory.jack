@@ -16,6 +16,8 @@ class Memory {
     static int HEAP_END;
     static int HEAP_LEN;
     static int HEADER_LEN;
+    static int firstFreeBlock; // Pointer to first free block (saves time)
+
     static int NO_MORE_MEMORY; // Error code
 
     /** Initializes the class. */
@@ -33,6 +35,8 @@ class Memory {
         do Memory.setLen(HEAP_BASE, HEAP_LEN);
         do Memory.setPrevAdr(HEAP_BASE, null);
         do Memory.setIsEmpty(HEAP_BASE, true);
+
+        let firstFreeBlock = HEAP_BASE;
 
         return;
     }
@@ -58,7 +62,7 @@ class Memory {
                             // splitting a block for allocation
         var int splitLen;   // Length of the splitBlock
 
-        let currBlock = HEAP_BASE;  // Start looking from base forward
+        let currBlock = firstFreeBlock;    // Start looking from firstFreeBlock
         let blockSize = size + HEADER_LEN; // Allocate header + required size
 
         // first-fit strategy:
@@ -93,9 +97,22 @@ class Memory {
                     do Memory.setPrevAdr(nextBlock, splitAdr);
                 }
             }
-            // No split? Mark the entire block as not empty
+            // No split? Mark the entire block as NOT empty
             else {
                 do Memory.setIsEmpty(currBlock, false);
+            }
+
+            // Update firstFreeBlock for faster future searches
+            if (currBlock = firstFreeBlock) {
+                while ((Memory.getNextAdr(firstFreeBlock) < HEAP_LEN) &
+                       (~(Memory.getIsEmpty(firstFreeBlock)))) {
+                   let firstFreeBlock = Memory.getNextAdr(firstFreeBlock);
+                }
+
+                // Validate a new first-free-block was found
+                if (~(Memory.getIsEmpty(firstFreeBlock))){
+                    do Sys.error(NO_MORE_MEMORY);
+                }
             }
 
             // Return data pointer of allocated block
@@ -159,6 +176,12 @@ class Memory {
 
         // Mark this block as empty
         do Memory.setIsEmpty(currBlock, true);
+
+        // Update first-free-block if relevant
+        if (currBlock < firstFreeBlock){
+            let firstFreeBlock = currBlock;
+        }
+
         return;
     }
 
