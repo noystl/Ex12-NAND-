@@ -490,22 +490,15 @@ push constant 0
 call Output.create 12
 pop temp 0
 push constant 65
-push constant 48
-push constant 120
-push constant 52
-neg
-push constant 52
-neg
-push constant 4
-neg
-push constant 52
-neg
-push constant 52
-neg
-push constant 52
-neg
-push constant 52
-neg
+push constant 12
+push constant 30
+push constant 51
+push constant 51
+push constant 63
+push constant 51
+push constant 51
+push constant 51
+push constant 51
 push constant 0
 push constant 0
 call Output.create 12
@@ -1535,10 +1528,10 @@ pop temp 0
 push local 0
 push local 1
 push local 0
-push constant 8
+push constant 7
 add
 push local 1
-push constant 11
+push constant 10
 add
 call Screen.drawRectangle 4
 pop temp 0
