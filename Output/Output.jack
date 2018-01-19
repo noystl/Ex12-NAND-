@@ -16,7 +16,7 @@
  */
 class Output {
 
-    // Character map for displaying characters
+    // Characte map for displaying characters
     static Array charMaps;
 
     // The cursor's coordinates:
