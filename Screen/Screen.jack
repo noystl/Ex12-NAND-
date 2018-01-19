@@ -67,7 +67,7 @@ class Screen {
         var int wordAdr, word, row, col, pix, bitmask;
 
         // Calculate row and column of pixel's word
-        let row = Screen.mult32(y);
+        let row = Screen.mul32(y);
         let col = Screen.div16(x);
 
         // Build bitmask of pixel's word
@@ -94,19 +94,23 @@ class Screen {
     function void drawRectangle(int x1, int y1, int x2, int y2) {
         var int swap, row;
 
-        // No height? Draw line
+        // No height? Draw horizontal line
         if (y1 = y2){
             do Screen.drawHorizontalLine(y1, x1, x2);
             return;
         }
 
-        // Validate: y1 < y2
-        else {
-            if (y2 < y1){
-                let swap = y1;
-                let y1 = y2;
-                let y2 = swap;
-            }
+        // No width? Draw vertical line
+        if (x1 = x2){
+            do Screen.drawVerticalLine(x1, y1, y2);
+            return;
+        }
+
+        // Assert: y1 < y2
+        if (y2 < y1){
+            let swap = y1;
+            let y1 = y2;
+            let y2 = swap;
         }
 
         // Draw rectangle line by line
@@ -202,7 +206,7 @@ class Screen {
         }
 
         // Extract row, columns and pixels
-        let row = Screen.mult32(y);
+        let row = Screen.mul32(y);
         let leftCol = Screen.div16(left);
         let leftPix = Screen.mod16(left);
         let rightCol = Screen.div16(right);
@@ -232,6 +236,46 @@ class Screen {
 
             // Color right part
             do Screen.colorWord(row, rightCol, maskRight);
+        }
+
+        return;
+    }
+
+    /** Draws a vertical line at position x from y1 to y2 */
+    function void drawVerticalLine(int x, int y1, int y2){
+        var int top, bottom;
+        var int topRow, botRow, col;
+        var int row, mask, pix;
+
+        // RazK: TODO: If ALL usages can determine this in advance, remove
+        // Classify top and bottom (or draw pixel if same)
+        if (y1 < y2){
+            let top = y1;
+            let bottom = y2;
+        }
+        else {
+            if (y2 < y1){
+                let top = y2;
+                let bottom = y1;
+            }
+            else { // Same y --> single pixel
+                do Screen.drawPixel(x, y1);
+                return;
+            }
+        }
+
+        // Extract col, rows and pixels
+        let col = Screen.div16(x);
+        let topRow = Screen.mul32(top);
+        let botRow = Screen.mul32(bottom);
+        let pix = Screen.mod16(x);
+        let mask = twoPows[pix];
+
+        // Color words between
+        let row = topRow;
+        while (row < (botRow + 1)){
+            do Screen.colorWord(row, col, mask);
+            let row = row + 32; // row step = 32
         }
 
         return;
@@ -273,7 +317,7 @@ class Screen {
     // ===================
 
     /** Calculates (x * 32) FAST */
-    function int mult32(int x){
+    function int mul32(int x){
         var int i;
         let i = 0;
         while (i<5){
