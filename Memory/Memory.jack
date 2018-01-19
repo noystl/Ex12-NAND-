@@ -180,14 +180,14 @@ class Memory {
     // ==========================
     // = Memory Block Structure =
     // ==========================
-    //  adr | value
-    // -----+----------
-    //  0   | len (=n)
-    //  1   | isEmpty
-    //  2   | prev
-    //  3   | data[0]
-    //  ... | data[...]
-    //  n-1 | data[n-4] # data[n-1-HEADER_LEN]
+    //  adr | value     | comments
+    // -----+-----------+---------
+    //  0   | len       | n
+    //  1   | isEmpty   | boolean
+    //  2   | prev      | address
+    //  3   | data[0]   | pointed by alloc
+    //  ... | data[...] |
+    //  n-1 | data[n-4] | data[n-1-HEADER_LEN]
 
     // ===========
     // = Getters =
@@ -261,8 +261,8 @@ class Memory {
 
     /** Sets the address of the previous memory block before the given
      * block. */
-    function void setPrevAdr(int blockAdr, int preAdr) {
-        let memory[blockAdr + 2] = preAdr;
+    function void setPrevAdr(int blockAdr, int prevAdr) {
+        let memory[blockAdr + 2] = prevAdr;
         return;
     }
 }
