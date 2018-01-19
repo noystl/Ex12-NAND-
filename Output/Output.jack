@@ -7,9 +7,9 @@
  * A library of functions for writing text on the screen.
  * The Hack physical screen consists of 512 rows of 256 pixels each.
  * The library uses a fixed font, in which each character is displayed 
- * within a frame which is 11 pixels high (including 1 pixel for inter-line 
+ * within a frame which is 11 pixels high including 1 pixel for inter-line
  * spacing) and 8 pixels wide (including 2 pixels for inter-character spacing).
- * The resulting grid accommodates 23 rows (indexed 0..22, top to bottom)
+ * The resulting grid accommodates 23 rows indexed 0..22, top to bottom)
  * of 64 characters each (indexed 0..63, left to right). The top left 
  * character position on the screen is indexed (0,0). A cursor, implemented
  * as a small filled square, indicates where the next character will be displayed.
@@ -80,7 +80,7 @@ class Output {
         do Output.create(64,30,51,51,59,59,59,27,3,30,0,0);  // @
         do Output.create(63,30,51,51,24,12,12,0,12,12,0,0);  // ?
 
-        do Output.create(65,48,120,-52,-52,-4,-52,-52,-52,-52,0,0);          // A ** TO BE FILLED **
+        do Output.create(65,12,30,51,51,63,51,51,51,51,0,0);          // A ** TO BE FILLED **
         do Output.create(66,31,51,51,51,31,51,51,51,31,0,0); // B
         do Output.create(67,28,54,35,3,3,3,35,54,28,0,0);    // C
         do Output.create(68,15,27,51,51,51,51,51,27,15,0,0); // D
@@ -203,7 +203,7 @@ class Output {
             let bitPoseY = cursorY*11;
 
             do Screen.setColor(false);  //Deletes the letter in position i,j.
-            do Screen.drawRectangle(bitPoseX, bitPoseY, (bitPoseX + 8), (bitPoseY + 11));
+            do Screen.drawRectangle(bitPoseX, bitPoseY, (bitPoseX + 7), (bitPoseY + 10));
         }
 
         return;
