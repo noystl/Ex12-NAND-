@@ -81,10 +81,50 @@ class Screen {
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
+        var int a, b, dx, dy, ady_bdx, adx, ady, xsign, ysign;
+
         // Horizontal line?
         if (y1 = y2){
             do Screen.drawHorizontalLine(y1, x1, x2);
             return;
+        }
+
+        // Vertical line?
+        if (x1 = x2){
+            do Screen.drawVerticalLine(x1, y1, y2);
+            return;
+        }
+
+        let a = 0;
+        let b = 0;
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let ady_bdx = 0;
+
+        let xsign = 1;
+        let adx = dx;
+        if (dx < 0){
+            let xsign = -1;
+            let adx = -dx;
+        }
+
+        let ysign = 1;
+        let ady = dy;
+        if (dy < 0){
+            let ysign = -1;
+            let ady = -dy;
+        }
+
+        while ((~(a > adx)) & (~(b > ady))){
+            do Screen.drawPixel(x1 + (xsign * a), y1 + (ysign * b));
+            if (ady_bdx < 0){
+                let a = a + 1;
+                let ady_bdx = ady_bdx + ady;
+            }
+            else{
+                let b = b + 1;
+                let ady_bdx = ady_bdx - adx;
+            }
         }
         return;
     }
