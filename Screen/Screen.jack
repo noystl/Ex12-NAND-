@@ -10,7 +10,9 @@
  * the screen is indexed (0,0).
  */
 class Screen {
-    static int SCREEN_BASE;
+    static int SCREEN_BASE_ADR;
+    static int SCREEN_X_MAX;
+    static int SCREEN_Y_MAX;
     static Array twoPows;
     static boolean isBlack;
 
@@ -18,7 +20,9 @@ class Screen {
     function void init() {
         var int i, x;
 
-        let SCREEN_BASE = 16384;
+        let SCREEN_BASE_ADR = 16384;
+        let SCREEN_X_MAX = 511;
+        let SCREEN_Y_MAX = 255;
         let isBlack = true;
 
         // Init 2-pows
@@ -36,7 +40,18 @@ class Screen {
 
     /** Erases the entire screen. */
     function void clearScreen() {
-        // RazK: TODO: Implement!
+        var boolean wasBlack;
+        // Hold previous color
+        let wasBlack = isBlack;
+
+        // Draw white rectangle over entire screen
+        let isBlack = false;
+        // RazK: TODO: Optimize by implementing specifically instead of calling
+        // drawRectangle (which uses redundant if statements)
+        do Screen.drawRectangle(0,0,SCREEN_X_MAX, SCREEN_Y_MAX);
+
+        // Restores previous color
+        let isBlack = wasBlack;
         return;
     }
 
@@ -68,22 +83,64 @@ class Screen {
     function void drawLine(int x1, int y1, int x2, int y2) {
         // Horizontal line?
         if (y1 = y2){
-
+            do Screen.drawHorizontalLine(y1, x1, x2);
+            return;
         }
-        // RazK: TODO: Implement!
         return;
     }
 
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
-        // RazK: TODO: Implement!
+        var int swap, row;
+
+        // No height? Draw line
+        if (y1 = y2){
+            do Screen.drawHorizontalLine(y1, x1, x2);
+            return;
+        }
+
+        // Validate: y1 < y2
+        else {
+            if (y2 < y1){
+                let swap = y1;
+                let y1 = y2;
+                let y2 = swap;
+            }
+        }
+
+        // Draw rectangle line by line
+        let row = y1;
+        while (~(row > y2)){
+            do Screen.drawHorizontalLine(row, x1, x2);
+            let row = row + 1;
+        }
         return;
     }
 
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
-        // RazK: TODO: Implement!
+        var int dy, r2, dy2, sqrtR2_dy2;
+        let r2 = r * r;
+
+        // Draw circle using the PDF algorithm (FAST)
+        let dy = -r;
+        let dy2 = r2; // (-r)*(-r) = r^2
+        while (~(dy > r)){
+            // Calc sqrt(r^2 - dy^2)
+            let sqrtR2_dy2 = Math.sqrt(r2 - dy2);
+
+            // Draw line: (x-sqrtR2_y2, y+dy) to (x+sqrtR2_y2, y+dy)
+            do Screen.drawHorizontalLine(y + dy,
+                                         x - sqrtR2_dy2,
+                                         x + sqrtR2_dy2);
+
+            // Update dy^2 FAST using identities
+            let dy2 = dy2 + dy + dy + 1; // (dy+1)^2 = dy^2 + 2dy + 1
+
+            // Advance dy
+            let dy = dy + 1;
+        }
         return;
     }
 
@@ -110,7 +167,7 @@ class Screen {
         var int wordAdr, word;
 
         // Extract desired word from screen
-        let wordAdr = SCREEN_BASE + row + col;
+        let wordAdr = SCREEN_BASE_ADR + row + col;
         let word = Memory.peek(wordAdr);
 
         // Color masked pixels in word with current color
