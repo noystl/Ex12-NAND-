@@ -7,7 +7,7 @@
  * A library of functions for writing text on the screen.
  * The Hack physical screen consists of 512 rows of 256 pixels each.
  * The library uses a fixed font, in which each character is displayed 
- * within a frame which is 11 pixels high (including 1 pixel for inter-line 
+ * within a frame which is 11 pixels high including 1 pixel for inter-line
  * spacing) and 8 pixels wide (including 2 pixels for inter-character spacing).
  * The resulting grid accommodates 23 rows (indexed 0..22, top to bottom)
  * of 64 characters each (indexed 0..63, left to right). The top left 
