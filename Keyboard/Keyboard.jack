@@ -127,8 +127,10 @@ class Keyboard {
     function int readInt(String message) {
 
         var String input;
+        var int ret;
         let input = Keyboard.readLine(message);
+        let ret = String.intValue(input);
 
-        return String.intValue(input);
+        return ret;
     }
 }
