@@ -129,7 +129,7 @@ class Keyboard {
         var String input;
         var int ret;
         let input = Keyboard.readLine(message);
-        let ret = String.intValue(input);
+        let ret = input.intValue();
 
         return ret;
     }
