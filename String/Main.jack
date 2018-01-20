@@ -7,14 +7,14 @@
 class Main {
 
     /** Performs various string manipulations and displays their results. */
-      function void main(){
+      /**function void main(){
            var String s;
            let s = "445nhfnf";
-           do Output.printInt(s.intValue());
+           do Output.printInt(s.intValue()); */
 
 
 
-   /** function void main() {
+   function void main() {
         var String s;
         var String i;
         
@@ -83,7 +83,7 @@ class Main {
         do Output.println();
         
         do i.dispose();
-        do s.dispose(); */
+        do s.dispose();
 
         return;
     }
