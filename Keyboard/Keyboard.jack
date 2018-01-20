@@ -69,6 +69,9 @@ class Keyboard {
             return printThis;
         }
 
+        if(printThis > 129){
+            return printThis;
+        }
         do Output.backSpace();
         do Output.printChar(printThis);
 

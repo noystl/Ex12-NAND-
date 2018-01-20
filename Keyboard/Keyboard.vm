@@ -46,6 +46,15 @@ pop temp 0
 push local 1
 return
 label IF_FALSE0
+push local 1
+push constant 129
+gt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 1
+return
+label IF_FALSE1
 call Output.backSpace 0
 pop temp 0
 push local 1
