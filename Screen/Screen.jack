@@ -35,6 +35,8 @@ class Screen {
             let i = i + 1;
         }
 
+        // Clear the screen
+        do Screen.clearScreen();
         return;
     }
 
@@ -81,7 +83,7 @@ class Screen {
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
-        var int a, b, dx, dy, ady_bdx, adx, ady, xsign, ysign;
+        var int a, b, dx, dy, ady_bdx, abs_dx, abs_dy, xsign, ysign;
 
         // Horizontal line?
         if (y1 = y2){
@@ -95,35 +97,39 @@ class Screen {
             return;
         }
 
+        // Initialize stuff for the algorithm
         let a = 0;
         let b = 0;
         let dx = x2 - x1;
         let dy = y2 - y1;
         let ady_bdx = 0;
 
+        // Initialize signed stuff for x
         let xsign = 1;
-        let adx = dx;
+        let abs_dx = dx;
         if (dx < 0){
             let xsign = -1;
-            let adx = -dx;
+            let abs_dx = -dx;
         }
 
+        // Initialize signed stuff for y
         let ysign = 1;
-        let ady = dy;
+        let abs_dy = dy;
         if (dy < 0){
             let ysign = -1;
-            let ady = -dy;
+            let abs_dy = -dy;
         }
 
-        while ((~(a > adx)) & (~(b > ady))){
+        //
+        while ((~(a > abs_dx)) & (~(b > abs_dy))){
             do Screen.drawPixel(x1 + (xsign * a), y1 + (ysign * b));
             if (ady_bdx < 0){
                 let a = a + 1;
-                let ady_bdx = ady_bdx + ady;
+                let ady_bdx = ady_bdx + abs_dy;
             }
             else{
                 let b = b + 1;
-                let ady_bdx = ady_bdx - adx;
+                let ady_bdx = ady_bdx - abs_dx;
             }
         }
         return;
