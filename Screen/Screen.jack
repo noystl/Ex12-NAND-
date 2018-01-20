@@ -11,6 +11,7 @@
  */
 class Screen {
     static int SCREEN_BASE_ADR;
+    static int SCREEN_END_ADR;
     static int SCREEN_X_MAX;
     static int SCREEN_Y_MAX;
     static Array twoPows;
@@ -21,6 +22,7 @@ class Screen {
         var int i, x;
 
         let SCREEN_BASE_ADR = 16384;
+        let SCREEN_END_ADR = SCREEN_BASE_ADR + 8192;
         let SCREEN_X_MAX = 511;
         let SCREEN_Y_MAX = 255;
         let isBlack = true;
@@ -42,18 +44,12 @@ class Screen {
 
     /** Erases the entire screen. */
     function void clearScreen() {
-        var boolean wasBlack;
-        // Hold previous color
-        let wasBlack = isBlack;
-
-        // Draw white rectangle over entire screen
-        let isBlack = false;
-        // RazK: TODO: Optimize by implementing specifically instead of calling
-        // drawRectangle (which uses redundant if statements)
-        do Screen.drawRectangle(0,0,SCREEN_X_MAX, SCREEN_Y_MAX);
-
-        // Restores previous color
-        let isBlack = wasBlack;
+        var int i;
+        let i = SCREEN_BASE_ADR;
+        while (i < SCREEN_END_ADR){
+            do Memory.poke(i, 0);
+            let i = i + 1;
+        }
         return;
     }
 
@@ -97,7 +93,7 @@ class Screen {
             return;
         }
 
-        // Initialize stuff for the algorithm
+        // Initialize stuff for diagonal line algorithm
         let a = 0;
         let b = 0;
         let dx = x2 - x1;
@@ -120,7 +116,7 @@ class Screen {
             let abs_dy = -dy;
         }
 
-        //
+        // Draw diagonal line by horizontal\vertical interlacing
         while ((~(a > abs_dx)) & (~(b > abs_dy))){
             do Screen.drawPixel(x1 + (xsign * a), y1 + (ysign * b));
             if (ady_bdx < 0){
@@ -251,7 +247,7 @@ class Screen {
             }
         }
 
-        // Extract row, columns and pixels
+        // Extract row, columns and pixels of x1, x2
         let row = Screen.mul32(y);
         let leftCol = Screen.div16(left);
         let leftPix = Screen.mod16(left);
