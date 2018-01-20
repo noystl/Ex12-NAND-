@@ -23,17 +23,6 @@ return
 function String.dispose 0
 push argument 0
 pop pointer 0
-push this 1
-push constant 1
-lt
-not
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push this 2
-call Array.dispose 1
-pop temp 0
-label IF_FALSE0
 push pointer 0
 call Memory.deAlloc 1
 pop temp 0
@@ -49,6 +38,8 @@ push argument 0
 pop pointer 0
 push argument 1
 push this 0
+push constant 1
+sub
 gt
 if-goto IF_TRUE0
 goto IF_FALSE0
@@ -68,6 +59,8 @@ push argument 0
 pop pointer 0
 push argument 1
 push this 0
+push constant 1
+sub
 gt
 if-goto IF_TRUE0
 goto IF_FALSE0
@@ -160,12 +153,13 @@ push local 3
 push pointer 0
 call String.length 1
 lt
+not
+if-goto WHILE_END0
 push constant 47
 push pointer 0
 push local 3
 call String.charAt 2
 lt
-and
 push constant 58
 push pointer 0
 push local 3
@@ -173,7 +167,19 @@ call String.charAt 2
 gt
 and
 not
-if-goto WHILE_END0
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 2
+push constant 1
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 0
+return
+label IF_FALSE2
+label IF_FALSE1
 push pointer 0
 push local 3
 call String.charAt 2
@@ -195,12 +201,12 @@ label WHILE_END0
 push local 2
 push constant 1
 eq
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
 push local 0
 return
-label IF_FALSE1
+label IF_FALSE3
 push local 0
 neg
 return

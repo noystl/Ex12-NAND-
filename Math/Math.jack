@@ -63,12 +63,13 @@ class Math{
 				var int temp;
 				var int q;
 
-				if(y>16383){  // Takes care of overflows.
-					return 1; 
+
+				if((y > x)|(y < 0)){
+					return 0;
 				}
 
-				if(y > x){
-					return 0;
+				if(y>16383){  // Takes care of overflows.
+					return 1;
 				}
 
 				let q = Math.divide(x, (y+y));
