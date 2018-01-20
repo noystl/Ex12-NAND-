@@ -9,8 +9,6 @@
  * of 256 pixels each (indexed 0..255, left to right). The top left pixel on 
  * the screen is indexed (0,0).
  */
-
-
 class Screen {
     static int SCREEN_BASE_ADR;
     static int SCREEN_END_ADR;
