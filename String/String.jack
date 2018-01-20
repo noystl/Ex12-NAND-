@@ -1,10 +1,5 @@
 class String{
 
-
-    //TODO: test sys errors
-    // TODO: 19   String.setInt         Insufficient string capacity
-
-
 	field int realLength;
 	field int mLength;
 	field Array string;
@@ -26,9 +21,9 @@ class String{
 
 	method void dispose(){
 	/** Disposes the string */
-        if(~(mLength < 1)){
+        /**if(~(mLength < 1)){
             do string.dispose();
-        }
+        }*/
         do Memory.deAlloc(this);
 		return;
 	}
@@ -42,7 +37,7 @@ class String{
 	method char charAt(int j){
 	/** Returns the char at index j */
 
-		if(j > realLength){
+		if(j > (realLength - 1)){
 			do Sys.error(15);
 		}
 		return string[j];
@@ -52,7 +47,7 @@ class String{
 	method void setCharAt(int j, char c){
 	/** Sets the j'th element of the string to be c */
 
-		if(j > (realLength)){
+		if(j > (realLength - 1)){
 			do Sys.error(16);
 		}
 
@@ -105,7 +100,13 @@ class String{
             let i = 1;
         }
 
-        while((i < length()) & (47 < charAt(i)) & (58 > charAt(i))){
+        while(i < length()){
+
+            if(~((47 < charAt(i)) & (58 > charAt(i)))){
+                if(sign = 1){
+                return v;
+                }
+            }
 
             let d = charAt(i) - 48;
             let v = (v * 10) + d;
@@ -124,18 +125,14 @@ class String{
     /** This function returns the modulus of a/b */
 
     var int  mod;
-
     let mod = a;
 
     while(mod > b){
-
         let mod = mod - b;
-
     }
 
     return mod;
     }
-
 
 	method void setIntHelper(int j){
 	/** Converts a non negative number to a string */
@@ -145,20 +142,14 @@ class String{
 		let c = 48 + String.mod(j,10);
 
         if(j < 10){
-
 			do appendChar(c);
 		}
-		else{
 
+		else{
 			do setIntHelper(j / 10);
 			do appendChar(c);
 		}
 		return;
-
-
-
-
-
 
 		/**var int last;
 		var char c;
